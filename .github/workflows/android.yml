@@ -13,6 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install system dependencies
         run: |
           sudo apt update
@@ -44,9 +52,13 @@ jobs:
           pip3 install --upgrade pip
           pip3 install buildozer cython
 
-      - name: Accept Android SDK licenses
-        run: |
-          yes | $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --licenses
+      - name: Cache Android SDK/NDK
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.buildozer/android/platform/android-sdk
+            ~/.buildozer/android/platform/android-ndk
+          key: ${{ runner.os }}-android-sdk
 
       - name: Build APK
         run: |
