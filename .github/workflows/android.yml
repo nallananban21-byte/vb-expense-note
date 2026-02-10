@@ -1,65 +1,8 @@
-name: Build Android APK
-
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Cache pip packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            python3 \
-            python3-pip \
-            python3-setuptools \
-            python3-wheel \
-            python3-dev \
-            build-essential \
-            openjdk-17-jdk \
-            git \
-            zip \
-            unzip \
-            libssl-dev \
-            libffi-dev \
-            liblzma-dev \
-            libsqlite3-dev \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libreadline-dev \
-            libgdbm-dev \
-            libnss3-dev \
-            libgl1-mesa-dev
-
-      - name: Install Buildozer
-        run: |
-          pip3 install --upgrade pip
-          pip3 install buildozer cython
-
-      - name: Cache Android SDK/NDK
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.buildozer/android/platform/android-sdk
-            ~/.buildozer/android/platform/android-ndk
-          key: ${{ runner.os }}-android-sdk
-
-      - name: Build APK
-        run: |
-          buildozer android debug
+- name: Install Android command line tools
+  run: |
+    mkdir -p $HOME/android-sdk/cmdline-tools
+    wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+    unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
+    rm cmdline-tools.zip
+    yes | $HOME/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk --licenses
+    yes | $HOME/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-33" "build-tools;36.1.0"
